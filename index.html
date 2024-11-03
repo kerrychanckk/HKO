@@ -72,7 +72,6 @@
     </div>
 
     <script>
-        // Location data for Hong Kong Observatory weather stations
         const locations = [
             "Hong Kong Observatory",
             "King's Park",
@@ -101,7 +100,6 @@
             "Kai Tak Runway Park"
         ];
 
-        // Populate the select dropdown
         const locationSelect = document.getElementById('locationSelect');
         locations.sort().forEach(location => {
             const option = document.createElement('option');
@@ -136,7 +134,6 @@
                     temperatureDisplay.innerHTML = `
                         <div>Temperature at ${locationData.place}</div>
                         <div class="temperature-value">${locationData.value}°${locationData.unit}</div>
-                        <div class="last-updated">Last updated: ${new Date(data.recordTime).toLocaleString()}</div>
                     `;
                 } else {
                     temperatureDisplay.innerHTML = `
@@ -150,10 +147,8 @@
             }
         }
 
-        // Add event listener to select dropdown
         locationSelect.addEventListener('change', fetchTemperature);
 
-        // Update temperature every 5 minutes
         setInterval(() => {
             if (locationSelect.value) {
                 fetchTemperature();
