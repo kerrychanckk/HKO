@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hong Kong Temperature by Location</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f8ff;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .temperature-display {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .temperature-value {
+            font-size: 2em;
+            color: #333;
+            margin: 10px 0;
+        }
+        .last-updated {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
+            color: #666;
+        }
+        .error {
+            color: #d43f3a;
+            padding: 10px;
+            background-color: #ffebee;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Hong Kong Temperature by Location</h1>
+        
+        <select id="locationSelect">
+            <option value="">Select a location...</option>
+        </select>
+
+        <div id="temperatureDisplay" class="temperature-display">
+            <div class="loading">Please select a location</div>
+        </div>
+    </div>
+
+    <script>
+        // Location data for Hong Kong Observatory weather stations
+        const locations = [
+            "Hong Kong Observatory",
+            "King's Park",
+            "Wong Chuk Hang",
+            "Ta Kwu Ling",
+            "Lau Fau Shan",
+            "Tai Po",
+            "Sha Tin",
+            "Tuen Mun",
+            "Tseung Kwan O",
+            "Sai Kung",
+            "Cheung Chau",
+            "Chek Lap Kok",
+            "Tsing Yi",
+            "Shek Kong",
+            "Tsuen Wan Ho Koon",
+            "Tsuen Wan Shing Mun Valley",
+            "Hong Kong Park",
+            "Shau Kei Wan",
+            "Kowloon City",
+            "Happy Valley",
+            "Wong Tai Sin",
+            "Stanley",
+            "Kwun Tong",
+            "Sham Shui Po",
+            "Kai Tak Runway Park"
+        ];
+
+        // Populate the select dropdown
+        const locationSelect = document.getElementById('locationSelect');
+        locations.sort().forEach(location => {
+            const option = document.createElement('option');
+            option.value = location;
+            option.textContent = location;
+            locationSelect.appendChild(option);
+        });
+
+        async function fetchTemperature() {
+            const selectedLocation = locationSelect.value;
+            const temperatureDisplay = document.getElementById('temperatureDisplay');
+
+            if (!selectedLocation) {
+                temperatureDisplay.innerHTML = '<div class="loading">Please select a location</div>';
+                return;
+            }
+
+            temperatureDisplay.innerHTML = '<div class="loading">Loading temperature data...</div>';
+
+            try {
+                const response = await fetch('https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=rhrread&lang=en');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const data = await response.json();
+                
+                const locationData = data.temperature.data.find(item => 
+                    item.place === selectedLocation
+                );
+
+                if (locationData) {
+                    temperatureDisplay.innerHTML = `
+                        <div>Temperature at ${locationData.place}</div>
+                        <div class="temperature-value">${locationData.value}°${locationData.unit}</div>
+                        <div class="last-updated">Last updated: ${new Date(data.recordTime).toLocaleString()}</div>
+                    `;
+                } else {
+                    temperatureDisplay.innerHTML = `
+                        <div class="error">No temperature data available for ${selectedLocation}</div>
+                    `;
+                }
+            } catch (error) {
+                temperatureDisplay.innerHTML = `
+                    <div class="error">Error loading temperature data: ${error.message}</div>
+                `;
+            }
+        }
+
+        // Add event listener to select dropdown
+        locationSelect.addEventListener('change', fetchTemperature);
+
+        // Update temperature every 5 minutes
+        setInterval(() => {
+            if (locationSelect.value) {
+                fetchTemperature();
+            }
+        }, 300000);
+    </script>
+</body>
+</html>
